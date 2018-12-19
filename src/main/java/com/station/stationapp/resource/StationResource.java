@@ -31,16 +31,18 @@ public class StationResource {
 	@Autowired
 	private StationRepository stationRepository;
 
-	@GetMapping("/Stations")
+	@GetMapping("/stations")
 	public List<Station> retrieveAllStations() {
 		log.info("retrieveAllStations");
-		return stationRepository.findAll();
+		List<Station> list=stationRepository.findAll();
+		System.out.println(list);
+		return list;
 	}
 
-	@GetMapping("/Stations/{id}")
+	@GetMapping("/stations/id/{id}")
 	@ApiOperation(value = "Find Station by id", notes = "Also returns a link to retrieve all Stations with rel - all-Stations")
-	public Resource<Station> retrieveStation(@PathVariable String id) {
-		log.info("retrieveStation");
+	public Resource<Station> retrieveStationById(@PathVariable String id) {
+		log.info("retrieveStation" + id);
 		Station station = stationRepository.findOne(id);
 
 		if (station == null)
@@ -55,13 +57,41 @@ public class StationResource {
 		return resource;
 	}
 
-	@DeleteMapping("/Stations/{id}")
+	@GetMapping("/stations/name/{name}")
+	@ApiOperation(value = "Find Station by name")
+	public List<Station> retrieveStationByName(@PathVariable String name) {
+		log.info("retrieveStation" + name);
+
+		List<Station> stationList = stationRepository.findByName(name);
+
+		if (stationList == null || stationList.size() == 0 || stationList.isEmpty())
+			throw new StationNotFoundException("name-" + name);
+
+		return stationList;
+	}
+	
+	@GetMapping("/stations/hdenabled/{hdEnabled}")
+	@ApiOperation(value = "Find Station by name HDEnable")
+	public List<Station> retrieveHDEnabledStations(@PathVariable String hdEnabled) {
+		log.info("retrieveStation" + hdEnabled);
+		
+		boolean enable=Boolean.parseBoolean(hdEnabled);
+
+		List<Station> stationList = stationRepository.findByHDEnable(enable);
+
+		if (stationList == null || stationList.size() == 0 || stationList.isEmpty())
+			throw new StationNotFoundException("enable-" + enable);
+
+		return stationList;
+	}
+
+	@DeleteMapping("/stations/{id}")
 	public void deleteStation(@PathVariable String id) {
 		log.info("deleteStation");
 		stationRepository.delete(id);
 	}
 
-	@PostMapping("/Vehicles")
+	@PostMapping("/stations")
 	public ResponseEntity<Object> createStation(@RequestBody Station station) {
 		log.info("createStation");
 		Station savedVehicle = stationRepository.save(station);
@@ -73,7 +103,7 @@ public class StationResource {
 
 	}
 
-	@PutMapping("/Stations/{id}")
+	@PutMapping("/stations/{id}")
 	public ResponseEntity<Object> updateStation(@RequestBody Station station, @PathVariable String id) {
 		log.info("updateStation");
 
@@ -94,4 +124,5 @@ public class StationResource {
 
 		return ResponseEntity.noContent().build();
 	}
+
 }
